@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const HoldingModel = require("./model/HoldingModel");
 const PositionsModel = require("./model/PositionsModel");
-const { OrderModel } = require("./model/orderModel");
+const { OrderModel } = require("./model/OrderModel");
 const { UserModel } = require("./model/UserModel");
 
 const app = express();
