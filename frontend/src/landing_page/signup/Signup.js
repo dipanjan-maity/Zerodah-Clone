@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3002";
+
 function Signup() {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,16 +21,13 @@ function Signup() {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "https://zerodha-backend-jac7.onrender.com/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+      const response = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 

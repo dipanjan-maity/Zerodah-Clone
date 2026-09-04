@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const bcrypt = require("bcryptjs");
 
 const HoldingModel = require("./model/HoldingModel");
 const PositionsModel = require("./model/PositionsModel");
@@ -95,9 +96,10 @@ app.post("/register", async (req, res) => {
     console.log("Registration data:", req.body);
 
     const { name, email, mobile, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
 
     // Check if email already exists
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await UserModel.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return res.status(400).json({
@@ -108,9 +110,9 @@ app.post("/register", async (req, res) => {
 
     // Create new user
     const newUser = new UserModel({
-      name,
-      email,
-      mobile,
+      name: name?.trim(),
+      email: normalizedEmail,
+      mobile: mobile?.trim(),
       password,
     });
 
@@ -127,9 +129,53 @@ app.post("/register", async (req, res) => {
   } catch (err) {
     console.error("Registration Error:", err);
 
+    if (err.code === 11000) {
+      const duplicateField = Object.keys(err.keyPattern || {})[0] || "field";
+
+      return res.status(409).json({
+        success: false,
+        error: `${duplicateField} already registered`,
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: err.message,
+    });
+  }
+});
+
+// Login existing user
+app.post("/login", async (req, res) => {
+  try {
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user || !(await bcrypt.compare(password || "", user.password))) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid email or password",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+      },
+    });
+  } catch (err) {
+    console.error("Login Error:", err);
+
+    res.status(500).json({
+      success: false,
+      error: "Unable to log in",
     });
   }
 });
@@ -140,6 +186,16 @@ async function start() {
     await mongoose.connect(process.env.MONGO_URL);
 
     console.log("MongoDB Connected");
+
+    const indexes = await UserModel.collection.listIndexes().toArray();
+    const legacyUsernameIndexes = indexes.filter(
+      (index) => index.key && Object.hasOwn(index.key, "username"),
+    );
+
+    for (const index of legacyUsernameIndexes) {
+      await UserModel.collection.dropIndex(index.name);
+      console.log(`Removed legacy index: ${index.name}`);
+    }
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);

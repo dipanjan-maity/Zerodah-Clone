@@ -40,19 +40,13 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-UserSchema.pre("save", async function (next) {
-  try {
-    // Only hash when password is new or modified
-    if (!this.isModified("password")) {
-      return next();
-    }
-
-    this.password = await bcrypt.hash(this.password.trim(), 12);
-
-    next();
-  } catch (error) {
-    next(error);
+UserSchema.pre("save", async function () {
+  // Only hash when password is new or modified
+  if (!this.isModified("password")) {
+    return;
   }
+
+  this.password = await bcrypt.hash(this.password.trim(), 12);
 });
 
 module.exports = UserSchema;
