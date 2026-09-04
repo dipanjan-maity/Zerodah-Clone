@@ -19,13 +19,16 @@ function Signup() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3002/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://zerodha-backend-jac7.onrender.com/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const data = await response.json();
 
@@ -50,7 +53,6 @@ function Signup() {
   return (
     <div className="container py-5">
       <div className="row align-items-center">
-
         <div className="col-md-6">
           <img
             src="/media/images/signup.png"
@@ -60,9 +62,7 @@ function Signup() {
         </div>
 
         <div className="col-md-6">
-          <h1 className="mb-4">
-            Open a free demat and trading account online
-          </h1>
+          <h1 className="mb-4">Open a free demat and trading account online</h1>
 
           <p className="text-muted mb-4">
             Start investing brokerage-free and join millions of investors and
@@ -128,10 +128,7 @@ function Signup() {
               />
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-            >
+            <button type="submit" className="btn btn-primary w-100">
               Create Account
             </button>
           </form>
@@ -141,7 +138,6 @@ function Signup() {
             Policy.
           </p>
         </div>
-
       </div>
     </div>
   );
